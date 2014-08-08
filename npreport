@@ -1,19 +1,30 @@
 #!/usr/bin/env python
 """ Do report on current numpy state
+
+Run from npsizes project root directory (containing setup.py):
+
+    ./npreport
 """
 from __future__ import print_function
 
 import os
+from os.path import isfile
 import sys
 
 from subprocess import check_call
 
 
-def main():
+def nuke_exts():
     for ext in ('.so', '.pyd', '.dll'):
         fname = 'npsizes' + ext
         if os.path.isfile(fname):
             os.unlink(fname)
+
+
+def main():
+    if not isfile('npsizes.c'):
+        raise RuntimeError("Run from npsizes root directory")
+    nuke_exts()
     check_call([sys.executable, 'setup.py', 'build_ext', '--inplace'])
     from npsizes import get_mem_size, get_def_sizes
     for name, def_sz in zip(('dtype', 'ndarray', 'ufunc'),
